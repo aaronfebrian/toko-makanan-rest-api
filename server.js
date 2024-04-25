@@ -11,7 +11,7 @@ const pool = new Pool({
   database: 'Food_App',
   port: 5432,
 });
-  
+
 // Swagger
 const swaggerUi = require('swagger-ui-express');
 const apiDocumentation = require('./apidocs.json');
@@ -27,18 +27,32 @@ app.get('/', (req, res) => {
 });
 
 // Route untuk mendapatkan daftar makanan
-app.get('/makanan', async (req, res) => {
+app.get('/makanan/:id?', async (req, res) => {
+  const { id } = req.params;
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM makanan');
+    let result;
+    if (id) {
+      result = await client.query('SELECT * FROM makanan WHERE id = $1', [id]);
+    } else {
+      result = await client.query('SELECT * FROM makanan');
+    }
     const makanan = result.rows;
     client.release();
+    if (!makanan || makanan.length === 0) {
+      if (id) {
+        return res.status(404).json({ error: 'Makanan not found' });
+      } else {
+        return res.status(404).json({ error: 'No makanan found' });
+      }
+    }
     res.json(makanan);
   } catch (err) {
     console.error('Error getting makanan', err.stack);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 // Route untuk menambahkan makanan baru
 app.post('/makanan', async (req, res) => {
