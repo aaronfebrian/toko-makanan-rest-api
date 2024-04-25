@@ -11,6 +11,12 @@ const pool = new Pool({
   database: 'Food_App',
   port: 5432,
 });
+  
+// Swagger
+const swaggerUi = require('swagger-ui-express');
+const apiDocumentation = require('./apidocs.json');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocumentation));
+// EndSwagger
 
 // Middleware
 app.use(express.json());
